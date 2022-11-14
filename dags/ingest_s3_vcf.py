@@ -54,9 +54,16 @@ def ingest_s3_vcf():
         delimiter='/',
         aws_conn_id='aws'
     )
-    p = re.compile('.*.bcf')
-    bcf_files = [ f for f in s3_files if p.match(s) ]
-    print(bcf_files)
+
+    def split(list, chunk_size):
+        for i in range(0, len(list), chunk_size):
+            yield list[i:i + chunk_size]
+
+    @task
+    def partition_files(s3_files, chunk_size):
+        p = re.compile('.*.bcf')
+        bcf_files = [ f for f in s3_files if p.match(s) ]
+        return list(split(bcf_files, 10))
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
