@@ -23,6 +23,7 @@
 import json
 import re
 
+from airflow import XComArg
 from airflow.decorators import dag, task
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
@@ -54,7 +55,7 @@ def ingest_s3_vcf():
         aws_conn_id='aws'
     )
     p = re.compile('.*.bcf')
-    bcf_files = [ f for f in s3_files.output if p.match(s) ]
+    bcf_files = [ f for f in XComArg(s3_files) if p.match(s) ]
     print(bcf_files)
 
 # [START dag_invocation]
