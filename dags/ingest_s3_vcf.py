@@ -21,6 +21,7 @@
 # [START tutorial]
 # [START import_module]
 import json
+import re
 
 from airflow.decorators import dag, task
 from airflow.utils.dates import days_ago
@@ -45,15 +46,16 @@ def ingest_s3_vcf():
     """
     # [END instantiate_dag]
 
-    list_s3_files = S3ListOperator(
+    s3_files = S3ListOperator(
         task_id='list_s3_files',
         bucket='synthetic-gvcfs',
         prefix='gvcfs/',
         delimiter='/',
         aws_conn_id='aws'
     )
-
-
+    p = re.compile('.*.bcf')
+    bcf_files = [ f for f in s3_files if p.match(s) ]
+    print(bcf_files)
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
