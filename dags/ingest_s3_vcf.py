@@ -62,7 +62,7 @@ def ingest_s3_vcf():
     @task
     def partition_files(s3_files, chunk_size):
         p = re.compile('.*\.bcf')
-        bcf_files = [ f for f in s3_files if p.match(s) ]
+        bcf_files = [ f for f in s3_files if p.match(f) ]
         return list(split(bcf_files, chunk_size))
 
     partitions = partition_files(XComArg(s3_files), 10)
