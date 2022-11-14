@@ -37,9 +37,13 @@ default_args = {
 # [END default_args]
 
 
+# [START instantiate_dag]
 @dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2))
-def ingest_s3_vcf(files):
-    print(files)
+def ingest_s3_vcf():
+    """
+    ### Ingest VCF files from S3
+    """
+    # [END instantiate_dag]
 
     list_s3_files = S3ListOperator(
         task_id='list_s3_files',
@@ -49,4 +53,8 @@ def ingest_s3_vcf(files):
         aws_conn_id='aws'
     )
 
-    ingest_s3_vcf(list_s3_files.output)
+
+
+# [START dag_invocation]
+ingest_s3_vcf = ingest_s3_vcf()
+# [END dag_invocation]
