@@ -63,7 +63,10 @@ def ingest_s3_vcf():
     def partition_files(s3_files, chunk_size):
         p = re.compile('.*.bcf')
         bcf_files = [ f for f in s3_files if p.match(s) ]
-        return list(split(bcf_files, 10))
+        return list(split(bcf_files, chunk_size))
+
+    partitions = partition_files(s3_files)
+
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
