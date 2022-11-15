@@ -60,7 +60,6 @@ def ingest_s3_vcf():
         prefix="{{ params.s3_prefix }}",
         delimiter='/',
         aws_conn_id="{{ params.s3_conn_id }}",
-        params=dag_params,
     )
 
     def split(a_list, chunk_size):
