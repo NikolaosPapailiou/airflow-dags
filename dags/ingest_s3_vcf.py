@@ -25,6 +25,7 @@ import re
 
 from airflow import XComArg
 from airflow.decorators import dag, task
+from airflow.models.param import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
 
