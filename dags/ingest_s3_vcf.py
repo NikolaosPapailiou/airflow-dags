@@ -56,10 +56,10 @@ def ingest_s3_vcf():
 
     s3_files = S3ListOperator(
         task_id='list_s3_files',
-        bucket={{ params.s3_bucket }},
-        prefix={{ params.s3_prefix }},
+        bucket="{{ params.s3_bucket }}",
+        prefix="{{ params.s3_prefix }}",
         delimiter='/',
-        aws_conn_id={{ params.s3_conn_id }}
+        aws_conn_id="{{ params.s3_conn_id }}"
     )
 
     def split(a_list, chunk_size):
