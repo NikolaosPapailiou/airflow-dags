@@ -36,11 +36,17 @@ from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
 default_args = {
     'owner': 'airflow',
 }
+
+dag_params = {
+    's3_bucket': 'synthetic-gvcfs',
+    's3_prefix': 'gvcfs/',
+    's3_conn_id': 'aws',
+}
 # [END default_args]
 
 
 # [START instantiate_dag]
-@dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2))
+@dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2), params=dag_params)
 def ingest_s3_vcf():
     """
     ### Ingest VCF files from S3
@@ -49,24 +55,28 @@ def ingest_s3_vcf():
 
     s3_files = S3ListOperator(
         task_id='list_s3_files',
-        bucket='synthetic-gvcfs',
-        prefix='gvcfs/',
+        bucket={{ params.s3_bucket }},
+        prefix={{ params.s3_prefix }},
         delimiter='/',
-        aws_conn_id='aws'
+        aws_conn_id={{ params.s3_conn_id }}
     )
 
-    def split(list, chunk_size):
-        for i in range(0, len(list), chunk_size):
-            yield list[i:i + chunk_size]
+    def split(a_list, chunk_size):
+        for i in range(0, len(a_list), chunk_size):
+            yield a_list[i:i + chunk_size]
 
     @task
-    def partition_files(s3_files, chunk_size):
+    def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
-        bcf_files = [ f for f in s3_files if p.match(f) ]
+        bcf_files = [s for s in files if p.match(s)]
         return list(split(bcf_files, chunk_size))
 
-    partitions = partition_files(XComArg(s3_files), 10)
+    @task
+    def ingest_vcf_to_tiledb(files):
+        print(files)
 
+    partitions = partition_files(XComArg(s3_files), 10)
+    ingest_vcf_to_tiledb.expand(files=partitions)
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
