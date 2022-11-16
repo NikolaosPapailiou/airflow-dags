@@ -47,7 +47,6 @@ dag_params = {
 }
 # [END default_args]
 
-
 # [START instantiate_dag]
 @dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2), params=dag_params)
 def ingest_s3_vcf():
@@ -84,7 +83,7 @@ def ingest_s3_vcf():
         in_cluster=True,
         task_id="ingest_vcf_to_tiledb",
         do_xcom_push=True,
-    )
+    ).partial(files)
 
     partitions = partition_files(XComArg(s3_files), 10)
     ingest_vcf_to_tiledb.expand(files=partitions)
