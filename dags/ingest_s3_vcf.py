@@ -74,7 +74,7 @@ def ingest_s3_vcf():
         bcf_files = [s for s in files if p.match(s)]
         return list(split(bcf_files, chunk_size))
 
-    ingest_vcf_to_tiledb = KubernetesPodOperator(
+    ingest_vcf_to_tiledb = KubernetesPodOperator.partial(
         namespace='airflow',
         image="703933321414.dkr.ecr.us-east-1.amazonaws.com/tiledbvcf-py:latest",
         cmds=["sh", "-c", "mkdir -p /airflow/xcom/;echo '[1,2,3,4]' > /airflow/xcom/return.json"],
@@ -83,10 +83,10 @@ def ingest_s3_vcf():
         in_cluster=True,
         task_id="ingest_vcf_to_tiledb",
         do_xcom_push=True,
-    ).partial(files)
+    )
 
     partitions = partition_files(XComArg(s3_files), 10)
-    ingest_vcf_to_tiledb.expand(files=partitions)
+    ingest_vcf_to_tiledb.expand(arguments=XComArg(partitions))
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
