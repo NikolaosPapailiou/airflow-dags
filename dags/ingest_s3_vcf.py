@@ -28,6 +28,7 @@ from airflow.decorators import dag, task
 from airflow.models.param import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 
 # [END import_module]
 
@@ -42,6 +43,7 @@ dag_params = {
     's3_bucket': 'synthetic-gvcfs',
     's3_prefix': 'gvcfs/',
     's3_conn_id': 'aws',
+    'tiledb_token': ''
 }
 # [END default_args]
 
@@ -73,9 +75,16 @@ def ingest_s3_vcf():
         bcf_files = [s for s in files if p.match(s)]
         return list(split(bcf_files, chunk_size))
 
-    @task
-    def ingest_vcf_to_tiledb(files):
-        print(files)
+    ingest_vcf_to_tiledb = KubernetesPodOperator(
+        namespace='airflow',
+        image="703933321414.dkr.ecr.us-east-1.amazonaws.com/tiledbvcf-py:latest",
+        cmds=["sh", "-c", "mkdir -p /airflow/xcom/;echo '[1,2,3,4]' > /airflow/xcom/return.json"],
+        name="ingest_vcf_to_tiledb",
+        is_delete_operator_pod=True,
+        in_cluster=True,
+        task_id="ingest_vcf_to_tiledb",
+        do_xcom_push=True,
+    )
 
     partitions = partition_files(XComArg(s3_files), 10)
     ingest_vcf_to_tiledb.expand(files=partitions)
