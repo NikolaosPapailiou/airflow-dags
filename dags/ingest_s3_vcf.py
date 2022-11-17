@@ -74,6 +74,7 @@ def ingest_s3_vcf():
         bcf_files = [s for s in files if p.match(s)]
         return list(split(bcf_files, chunk_size))
 
+    @task
     def ingest_vcf_to_tiledb_partial(files):
         return KubernetesPodOperator.partial(
             namespace='airflow',
@@ -99,7 +100,7 @@ def ingest_s3_vcf():
     )
 
     partitions = partition_files(XComArg(s3_files), 10)
-    ingest_vcf_to_tiledb_partial.partial().expand(files=partitions)
+    ingest_vcf_to_tiledb_partial.expand(files=partitions)
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
