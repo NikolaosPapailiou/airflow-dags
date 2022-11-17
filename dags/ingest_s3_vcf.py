@@ -72,7 +72,7 @@ def ingest_s3_vcf():
     def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
         bcf_files = [s for s in files if p.match(s)]
-        return [["mkdir -p /airflow/xcom/;", f"echo '{l}' > /airflow/xcom/return.json"] for l in list(split(bcf_files, chunk_size))]
+        return [["mkdir -p /airflow/xcom/;", f"echo \"{l}\" > /airflow/xcom/return.json"] for l in list(split(bcf_files, chunk_size))]
 
     ingest_vcf_to_tiledb = KubernetesPodOperator.partial(
         namespace='airflow',
