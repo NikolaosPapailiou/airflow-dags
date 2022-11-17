@@ -99,7 +99,7 @@ def ingest_s3_vcf():
     )
 
     partitions = partition_files(XComArg(s3_files), 10)
-    ingest_vcf_to_tiledb_partial.expand(files=partitions)
+    ingest_vcf_to_tiledb_partial.partial().expand(files=partitions)
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
