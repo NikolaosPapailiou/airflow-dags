@@ -77,7 +77,7 @@ def ingest_s3_vcf():
     ingest_vcf_to_tiledb = KubernetesPodOperator.partial(
         namespace='airflow',
         image="703933321414.dkr.ecr.us-east-1.amazonaws.com/tiledb-airflow:latest",
-        cmds=["bash", "-cx", "mkdir -p /airflow/xcom/;echo '[1,2,3,4]' > /airflow/xcom/return.json"],
+        cmds=["bash", "-cx"],
         name="ingest_vcf_to_tiledb",
         is_delete_operator_pod=True,
         in_cluster=True,
