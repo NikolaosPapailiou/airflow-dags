@@ -86,7 +86,7 @@ def ingest_s3_vcf():
     )
 
     partitions = partition_files(XComArg(s3_files), 10)
-    ingest_vcf_to_tiledb.expand(arguments=["mkdir -p /airflow/xcom/;", "echo", partitions, ">", "/airflow/xcom/return.json"])
+    ingest_vcf_to_tiledb.expand(arguments=["mkdir", "-p", "/airflow/xcom/", ";", "echo", "\'" partitions "\'", ">", "/airflow/xcom/return.json"])
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
