@@ -23,7 +23,8 @@
 import json
 import re
 import os
-import tiledbvcf, tiledb
+import tiledb
+import tiledbvcf
 
 from airflow import XComArg
 from airflow.decorators import dag, task
