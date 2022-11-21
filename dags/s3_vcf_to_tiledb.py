@@ -76,7 +76,8 @@ def s3_vcf_to_tiledb():
     @task
     def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
-        bcf_files = [ f"s3://{context["params"]["s3_bucket"]}/{s}" for s in files if p.match(s)]
+        s3_bucket = context["params"]["s3_bucket"]
+        bcf_files = [ f"s3://{s3_bucket}/{s}" for s in files if p.match(s)]
         return list(split_list(bcf_files, chunk_size))
 
     @task
