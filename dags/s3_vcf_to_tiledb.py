@@ -43,7 +43,7 @@ default_args = {
 
 dag_params = {
     's3_bucket': 'synthetic-gvcfs',
-    's3_prefix': 'gvcfs/',
+    's3_prefix': 'gvcfs/1000',
     's3_conn_id': 'aws',
     'tiledb_array_uri': 's3://tiledb-nikos/arrays/test-vcf'
 }
@@ -73,7 +73,7 @@ def s3_vcf_to_tiledb():
     @task
     def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
-        bcf_files = [ f"s3://synthetic-gvcfs/gvcfs/{s}" for s in files if p.match(s)]
+        bcf_files = [ f"s3://synthetic-gvcfs/gvcfs/1000{s}" for s in files if p.match(s)]
         return list(split(bcf_files, chunk_size))
 
     @task
