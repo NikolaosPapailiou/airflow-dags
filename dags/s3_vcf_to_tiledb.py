@@ -95,14 +95,12 @@ def s3_vcf_to_tiledb():
         tiledb_config = tiledb.Config()
         tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
         tiledb_config.set('vfs.s3.aws_secret_access_key', credentials.secret_key)
-
         cfg = tiledbvcf.ReadConfig(tiledb_config=tiledb_config)
         tiledbvcf.config_logging("info")
         print(f"tiledbvcf v{tiledbvcf.version}")
         print(f"Ingesting into array {array_uri}")
         ds = tiledbvcf.Dataset(array_uri, mode="w", cfg=cfg, stats=True)
         print(f"Opened {array_uri} (schema v{ds.schema_version()})")
-
         ds.ingest_samples(
             sample_uris=files,
             total_memory_budget_mb=7168,
