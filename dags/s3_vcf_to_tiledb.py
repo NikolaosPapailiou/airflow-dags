@@ -51,7 +51,7 @@ dag_params = {
 
 # [START instantiate_dag]
 @dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2), params=dag_params)
-def ingest_s3_vcf():
+def s3_vcf_to_tiledb():
     """
     ### Ingest VCF files from S3
     """
@@ -114,5 +114,5 @@ def ingest_s3_vcf():
     ingest_vcf_to_tiledb.partial(array_uri=dag_params.get('tiledb_array_uri')).expand(files=partitions)
 
 # [START dag_invocation]
-ingest_s3_vcf = ingest_s3_vcf()
+s3_vcf_to_tiledb = s3_vcf_to_tiledb()
 # [END dag_invocation]
