@@ -66,7 +66,7 @@ def s3_vcf_to_tiledb():
         params=dag_params,
     )
 
-    def split(a_list, chunk_size):
+    def split_list(a_list, chunk_size):
         for i in range(0, len(a_list), chunk_size):
             yield a_list[i:i + chunk_size]
 
@@ -74,7 +74,7 @@ def s3_vcf_to_tiledb():
     def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
         bcf_files = [ f"s3://synthetic-gvcfs/{s}" for s in files if p.match(s)]
-        return list(split(bcf_files, chunk_size))
+        return list(split_list(bcf_files, chunk_size))
 
     @task
     def create_array(array_uri):
@@ -107,9 +107,9 @@ def s3_vcf_to_tiledb():
             threads=4
         )
 
-    create_array(array_uri=dag_params.get('tiledb_array_uri'))
+    create_array(array_uri="{{ params.tiledb_array_uri }}")
     partitions = partition_files(XComArg(s3_files), 2)
-    ingest_vcf_to_tiledb.partial(array_uri=dag_params.get('tiledb_array_uri')).expand(files=partitions)
+    ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions)
 
 # [START dag_invocation]
 s3_vcf_to_tiledb = s3_vcf_to_tiledb()
