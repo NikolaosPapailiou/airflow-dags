@@ -47,6 +47,7 @@ dag_params = {
     's3_conn_id': 'aws',
     'tiledb_array_uri': 's3://tiledb-nikos/arrays/test-vcf',
     'tiledb_worker_memory': Param(2048, type="integer", minimum=1024),
+    'tiledb_worker_threads': Param(4, type="integer", minimum=1),
     'vcf_files_per_worker': Param(2, type="integer", minimum=1)
 }
 # [END default_args]
@@ -105,8 +106,8 @@ def s3_vcf_to_tiledb():
         print(f"Opened {array_uri} (schema v{ds.schema_version()})")
         ds.ingest_samples(
             sample_uris=files,
-            total_memory_budget_mb=2048,
-            threads=4
+            total_memory_budget_mb=context["params"]["tiledb_worker_memory"],
+            threads=context["params"]["tiledb_worker_threads"]
         )
 
     create_array(array_uri="{{ params.tiledb_array_uri }}")
