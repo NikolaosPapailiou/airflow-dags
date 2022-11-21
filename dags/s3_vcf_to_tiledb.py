@@ -66,7 +66,8 @@ def s3_vcf_to_tiledb():
         bucket="{{ params.s3_bucket }}",
         prefix="{{ params.s3_prefix }}",
         delimiter='/',
-        aws_conn_id="{{ params.s3_conn_id }}",
+        aws_conn_id="aws",
+        params=dag_params,
     )
 
     def split_list(a_list, chunk_size):
