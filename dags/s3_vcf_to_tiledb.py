@@ -23,7 +23,6 @@
 import json
 import re
 import os
-import tiledb, tiledbvcf
 
 from airflow import XComArg
 from airflow.decorators import dag, task
@@ -84,6 +83,7 @@ def s3_vcf_to_tiledb():
 
     @task
     def create_array(array_uri):
+        import tiledb, tiledbvcf
         context = get_current_context()
         aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
@@ -97,6 +97,7 @@ def s3_vcf_to_tiledb():
 
     @task
     def ingest_vcf_to_tiledb(files, array_uri):
+        import tiledb, tiledbvcf
         context = get_current_context()
         aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
