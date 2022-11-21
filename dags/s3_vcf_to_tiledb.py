@@ -103,7 +103,7 @@ def s3_vcf_to_tiledb():
         print(f"Opened {array_uri} (schema v{ds.schema_version()})")
         ds.ingest_samples(
             sample_uris=files,
-            total_memory_budget_mb=7168,
+            total_memory_budget_mb=2048,
             threads=4
         )
 
