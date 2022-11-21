@@ -23,8 +23,7 @@
 import json
 import re
 import os
-import tiledb
-import tiledbvcf
+import tiledb, tiledbvcf
 
 from airflow import XComArg
 from airflow.decorators import dag, task
@@ -32,7 +31,6 @@ from airflow.models.param import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
 from airflow.providers.amazon.aws.hooks.base_aws import AwsBaseHook
-from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 
 # [END import_module]
 
@@ -80,7 +78,7 @@ def ingest_s3_vcf():
 
     @task
     def ingest_vcf_to_tiledb(files, array_uri):
-        aws_hook = AwsBaseHook(aws_conn_id="{{ params.s3_conn_id }}")
+        aws_hook = AwsBaseHook(aws_conn_id="aws")
         credentials = aws_hook.get_credentials()
         tiledb_config = tiledb.Config()
         tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
