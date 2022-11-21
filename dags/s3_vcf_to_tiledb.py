@@ -65,7 +65,7 @@ def s3_vcf_to_tiledb():
         bucket="{{ params.s3_bucket }}",
         prefix="{{ params.s3_prefix }}",
         delimiter='/',
-        aws_conn_id='aws',
+        aws_conn_id="{{ params.s3_conn_id }}",
         params=dag_params,
     )
 
@@ -76,12 +76,12 @@ def s3_vcf_to_tiledb():
     @task
     def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
-        bcf_files = [ f"s3://synthetic-gvcfs/{s}" for s in files if p.match(s)]
+        bcf_files = [ f"s3://{context["params"]["s3_bucket"]}/{s}" for s in files if p.match(s)]
         return list(split_list(bcf_files, chunk_size))
 
     @task
     def create_array(array_uri):
-        aws_hook = AwsBaseHook(aws_conn_id="aws")
+        aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
         tiledb_config = tiledb.Config()
         tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
@@ -93,7 +93,7 @@ def s3_vcf_to_tiledb():
 
     @task
     def ingest_vcf_to_tiledb(files, array_uri):
-        aws_hook = AwsBaseHook(aws_conn_id=context["params"]["tiledb_worker_memory"])
+        aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
         tiledb_config = tiledb.Config()
         tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
