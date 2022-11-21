@@ -45,7 +45,9 @@ dag_params = {
     's3_bucket': 'synthetic-gvcfs',
     's3_prefix': 'gvcfs/1000',
     's3_conn_id': 'aws',
-    'tiledb_array_uri': 's3://tiledb-nikos/arrays/test-vcf'
+    'tiledb_array_uri': 's3://tiledb-nikos/arrays/test-vcf',
+    'tiledb_worker_memory': '2048'
+    'vcf_files_per_worker': '2'
 }
 # [END default_args]
 
@@ -108,7 +110,8 @@ def s3_vcf_to_tiledb():
         )
 
     create_array(array_uri="{{ params.tiledb_array_uri }}")
-    partitions = partition_files(XComArg(s3_files), 2)
+    create_array >> partition_files
+    partitions = partition_files(XComArg(s3_files), "{{ params.vcf_files_per_worker }}")
     ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions)
 
 # [START dag_invocation]
