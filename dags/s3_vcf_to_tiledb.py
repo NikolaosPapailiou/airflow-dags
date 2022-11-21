@@ -109,9 +109,9 @@ def ingest_s3_vcf():
             threads=4
         )
 
-    create_array(array_uri=params.tiledb_array_uri)
+    create_array(array_uri=dag_params.tiledb_array_uri)
     partitions = partition_files(XComArg(s3_files), 10)
-    ingest_vcf_to_tiledb.partial(array_uri=params.tiledb_array_uri).expand(files=partitions)
+    ingest_vcf_to_tiledb.partial(array_uri=dag_params.tiledb_array_uri).expand(files=partitions)
 
 # [START dag_invocation]
 ingest_s3_vcf = ingest_s3_vcf()
