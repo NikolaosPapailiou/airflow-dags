@@ -73,7 +73,7 @@ def s3_vcf_to_tiledb():
     @task
     def partition_files(files, chunk_size):
         p = re.compile('^.*\.bcf$')
-        bcf_files = [ f"s3://synthetic-gvcfs/gvcfs/1000{s}" for s in files if p.match(s)]
+        bcf_files = [ f"s3://synthetic-gvcfs/{s}" for s in files if p.match(s)]
         return list(split(bcf_files, chunk_size))
 
     @task
