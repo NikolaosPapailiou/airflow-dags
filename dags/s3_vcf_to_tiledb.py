@@ -119,7 +119,7 @@ def s3_vcf_to_tiledb():
     tiledbvcf.config_logging("info")
     ds = tiledbvcf.Dataset("{{ params.tiledb_array_uri }}", mode="w", cfg=cfg, stats=True)
     ds.create_dataset()
-    create_array(array_uri="{{ params.tiledb_array_uri }}")
+    # create_array(array_uri="{{ params.tiledb_array_uri }}")
     partitions = partition_files(XComArg(s3_files), "{{ params.vcf_files_per_worker }}")
     ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions)
 
