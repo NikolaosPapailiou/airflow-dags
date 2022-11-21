@@ -110,17 +110,8 @@ def s3_vcf_to_tiledb():
             threads=context["params"]["tiledb_worker_threads"]
         )
 
-    # create_array(array_uri="{{ params.tiledb_array_uri }}")
+    create_array(array_uri="{{ params.tiledb_array_uri }}")
     partitions = partition_files(XComArg(s3_files), "{{ params.vcf_files_per_worker }}")
-    aws_hook = AwsBaseHook(aws_conn_id="aws")
-    credentials = aws_hook.get_credentials()
-    tiledb_config = tiledb.Config()
-    tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
-    tiledb_config.set('vfs.s3.aws_secret_access_key', credentials.secret_key)
-    cfg = tiledbvcf.ReadConfig(tiledb_config=tiledb_config)
-    tiledbvcf.config_logging("info")
-    ds = tiledbvcf.Dataset("{{ params.tiledb_array_uri }}", mode="w", cfg=cfg, stats=True)
-    ds.create_dataset()
     ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions)
 
 # [START dag_invocation]
