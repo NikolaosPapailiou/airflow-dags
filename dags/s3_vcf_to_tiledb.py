@@ -102,7 +102,7 @@ def ingest_s3_vcf():
 
 # [START dag_invocation]
 
-aws_hook = AwsBaseHook(aws_conn_id="{{ params.s3_conn_id }}")
+aws_hook = AwsBaseHook(aws_conn_id="aws")
 credentials = aws_hook.get_credentials()
 tiledb_config = tiledb.Config()
 tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
