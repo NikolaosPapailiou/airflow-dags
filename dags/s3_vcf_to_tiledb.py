@@ -77,6 +77,18 @@ def ingest_s3_vcf():
         return list(split(bcf_files, chunk_size))
 
     @task
+    def create_array(array_uri):
+        aws_hook = AwsBaseHook(aws_conn_id="aws")
+        credentials = aws_hook.get_credentials()
+        tiledb_config = tiledb.Config()
+        tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
+        tiledb_config.set('vfs.s3.aws_secret_access_key', credentials.secret_key)
+        cfg = tiledbvcf.ReadConfig(tiledb_config=tiledb_config)
+        tiledbvcf.config_logging("info")
+        ds = tiledbvcf.Dataset(array_uri, mode="w", cfg=cfg, stats=True)
+        ds.create_dataset()
+
+    @task
     def ingest_vcf_to_tiledb(files, array_uri):
         aws_hook = AwsBaseHook(aws_conn_id="aws")
         credentials = aws_hook.get_credentials()
@@ -97,19 +109,10 @@ def ingest_s3_vcf():
             threads=4
         )
 
+    create_array(array_uri={{ params.tiledb_array_uri }})
     partitions = partition_files(XComArg(s3_files), 10)
     ingest_vcf_to_tiledb.partial(array_uri={{ params.tiledb_array_uri }}).expand(files=partitions)
 
 # [START dag_invocation]
-
-aws_hook = AwsBaseHook(aws_conn_id="aws")
-credentials = aws_hook.get_credentials()
-tiledb_config = tiledb.Config()
-tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
-tiledb_config.set('vfs.s3.aws_secret_access_key', credentials.secret_key)
-cfg = tiledbvcf.ReadConfig(tiledb_config=tiledb_config)
-tiledbvcf.config_logging("info")
-ds = tiledbvcf.Dataset({{ params.tiledb_array_uri }}, mode="w", cfg=cfg, stats=True)
-ds.create_dataset()
 ingest_s3_vcf = ingest_s3_vcf()
 # [END dag_invocation]
