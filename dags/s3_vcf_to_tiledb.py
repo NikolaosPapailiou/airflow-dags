@@ -31,6 +31,7 @@ from airflow.models.param import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
 from airflow.providers.amazon.aws.hooks.base_aws import AwsBaseHook
+from airflow.operators.python import get_current_context
 
 # [END import_module]
 
@@ -75,6 +76,7 @@ def s3_vcf_to_tiledb():
 
     @task
     def partition_files(files, chunk_size):
+        context = get_current_context()
         p = re.compile('^.*\.bcf$')
         s3_bucket = context["params"]["s3_bucket"]
         bcf_files = [ f"s3://{s3_bucket}/{s}" for s in files if p.match(s)]
@@ -82,6 +84,7 @@ def s3_vcf_to_tiledb():
 
     @task
     def create_array(array_uri):
+        context = get_current_context()
         aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
         tiledb_config = tiledb.Config()
@@ -94,6 +97,7 @@ def s3_vcf_to_tiledb():
 
     @task
     def ingest_vcf_to_tiledb(files, array_uri):
+        context = get_current_context()
         aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
         tiledb_config = tiledb.Config()
