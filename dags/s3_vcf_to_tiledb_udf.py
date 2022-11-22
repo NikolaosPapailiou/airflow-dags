@@ -123,5 +123,5 @@ def s3_vcf_to_tiledb():
     ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions)
 
 # [START dag_invocation]
-s3_vcf_to_tiledb = s3_vcf_to_tiledb()
+s3_vcf_to_tiledb_udf = s3_vcf_to_tiledb_udf()
 # [END dag_invocation]
