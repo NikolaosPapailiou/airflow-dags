@@ -98,7 +98,7 @@ def s3_vcf_to_tiledb_udf():
         ds.create_dataset()
 
     @task
-    def ingest_vcf_to_tiledb(files, array_uri):
+    def ingest_vcf_to_tiledb(files, contig, array_uri):
         import tiledb, tiledbvcf, tiledb.cloud
         from tiledb.cloud import udf
         context = get_current_context()
@@ -113,7 +113,7 @@ def s3_vcf_to_tiledb_udf():
         tiledb.cloud.udf.exec(
             func = "adam-wenocur/ingest_vcf_samples",
             array_uri = array_uri,
-            contig = "chr1",
+            contig = contig,
             sample_uris = files,
             partition_idx_count = [0, 1],
             tiledb_config = tiledb_config,
@@ -125,7 +125,12 @@ def s3_vcf_to_tiledb_udf():
 
     create_array(array_uri="{{ params.tiledb_array_uri }}")
     partitions = partition_files(XComArg(s3_files), "{{ params.vcf_files_per_worker }}")
-    ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions)
+    major_contigs = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6",
+                     "chr7", "chr8", "chr9", "chr10", "chr11",
+                     "chr12", "chr13", "chr14", "chr15", "chr16",
+                     "chr17", "chr18", "chr19", "chr20", "chr21",
+                     "chr22", "chrY", "chrX", "chrM", None]
+    ingest_vcf_to_tiledb.partial(array_uri="{{ params.tiledb_array_uri }}").expand(files=partitions, contig=major_contigs)
 
 # [START dag_invocation]
 s3_vcf_to_tiledb_udf = s3_vcf_to_tiledb_udf()
