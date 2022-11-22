@@ -54,7 +54,7 @@ dag_params = {
 
 # [START instantiate_dag]
 @dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2), params=dag_params)
-def s3_vcf_to_tiledb():
+def s3_vcf_to_tiledb_udf():
     """
     ### Ingest VCF files from S3
     """
