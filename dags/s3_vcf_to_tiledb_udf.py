@@ -48,7 +48,9 @@ dag_params = {
     'tiledb_array_uri': 's3://tiledb-nikos/arrays/test-vcf',
     'tiledb_worker_memory': Param(2048, type="integer", minimum=1024),
     'tiledb_worker_threads': Param(4, type="integer", minimum=1),
-    'vcf_files_per_worker': Param(2, type="integer", minimum=1)
+    'vcf_files_per_worker': Param(2, type="integer", minimum=1),
+    'tiledb_namespace': 'TileDB-Inc',
+    'tiledb_token': ''
 }
 # [END default_args]
 
@@ -102,20 +104,23 @@ def s3_vcf_to_tiledb_udf():
         context = get_current_context()
         aws_hook = AwsBaseHook(aws_conn_id=context["params"]["s3_conn_id"])
         credentials = aws_hook.get_credentials()
-        tiledb_config = tiledb.Config()
-        tiledb_config.set('vfs.s3.aws_access_key_id', credentials.access_key)
-        tiledb_config.set('vfs.s3.aws_secret_access_key', credentials.secret_key)
-        cfg = tiledbvcf.ReadConfig(tiledb_config=tiledb_config)
-        tiledbvcf.config_logging("info")
-        print(f"tiledbvcf v{tiledbvcf.version}")
-        print(f"Ingesting into array {array_uri}")
-        ingest_samples = sample_uris.pop()
+        tiledb_token = context["params"]["tiledb_token"]
+        tiledb.cloud.login(tiledb_token)
+        tiledb_config = {'vfs.s3.aws_access_key_id': credentials.access_key,
+                         'vfs.s3.aws_secret_access_key': credentials.secret_key,
+                         'vfs.s3.connect_timeout_ms': 120000,
+                         'vfs.s3.request_timeout_ms': 120000}
         tiledb.cloud.udf.exec(
             func = "adam-wenocur/ingest_vcf_samples",
             array_uri = array_uri,
+            contig = "chr1",
             sample_uris = files,
+            partition_idx_count = [0, 1],
             tiledb_config = tiledb_config,
-            namespace="nikolaos-papailiou",
+            memory_budget_mb = context["params"]["tiledb_worker_memory"],
+            threads = context["params"]["tiledb_worker_threads"],
+            stats = True,
+            namespace=context["params"]["tiledb_namespace"]
         )
 
     create_array(array_uri="{{ params.tiledb_array_uri }}")
